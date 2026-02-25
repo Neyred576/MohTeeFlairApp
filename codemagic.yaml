@@ -22,8 +22,8 @@ workflows:
       - name: Set up code signing
         script: |
           keychain initialize
-          # Fetch certificates and profiles from App Store Connect (requires setup in Codemagic UI)
-          # app-store-connect fetch-signing-files $(BUNDLE_ID) --project-id $(APP_STORE_ID) --type IOS_APP_STORE --install
+          # Fetch certificates and profiles from App Store Connect
+          app-store-connect fetch-signing-files $(BUNDLE_ID) --project-id $(APP_STORE_ID) --type IOS_APP_STORE --install
           keychain add-certificates
       - name: Build iOS app
         script: |
