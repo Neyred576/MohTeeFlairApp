@@ -23,8 +23,8 @@ workflows:
         script: |
           keychain initialize
           # Fetch certificates and profiles from App Store Connect
-          # We use the bundle ID directly. Profiles will be automatically created if 'create' is added.
-          app-store-connect fetch-signing-files "com.mohteeflair" --type IOS_APP_STORE --install --create
+          # Note: The bundle ID is hardcoded here to prevent variable expansion errors.
+          app-store-connect fetch-signing-files "com.mohteeflair" --type IOS_APP_STORE --create
           keychain add-certificates
       - name: Build iOS app
         script: |
