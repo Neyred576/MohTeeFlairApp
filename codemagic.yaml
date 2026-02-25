@@ -21,14 +21,10 @@ workflows:
           cd ios && pod install
       - name: Set up code signing
         script: |
-          echo "--- DEBUG INFO ---"
-          echo "Target Bundle ID: com.mohteeflair"
-          echo "Target Project ID: $APP_STORE_ID"
-          echo "------------------"
-          
           keychain initialize
           # Fetch certificates and profiles from App Store Connect
-          app-store-connect fetch-signing-files "com.mohteeflair" --project-id "$APP_STORE_ID" --type IOS_APP_STORE --install
+          # We use the bundle ID directly. Profiles will be automatically created if 'create' is added.
+          app-store-connect fetch-signing-files "com.mohteeflair" --type IOS_APP_STORE --install --create
           keychain add-certificates
       - name: Build iOS app
         script: |
