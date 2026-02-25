@@ -1,0 +1,39 @@
+workflows:
+  ios-release:
+    name: iOS Release
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      groups:
+        - apple_auth # Variable group for App Store Connect integration
+      vars:
+        XCODE_WORKSPACE: "MohTeeFlair.xcworkspace"
+        XCODE_SCHEME: "MohTeeFlair"
+      node: latest
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install
+      - name: Install CocoaPods
+        script: |
+          cd ios && pod install
+      - name: Set up code signing
+        script: |
+          keychain initialize
+          # Fetch certificates and profiles from App Store Connect (requires setup in Codemagic UI)
+          # app-store-connect fetch-signing-files $(BUNDLE_ID) --project-id $(APP_STORE_ID) --type IOS_APP_STORE --install
+          keychain add-certificates
+      - name: Build iOS app
+        script: |
+          xcode-project build-ipa \
+            --workspace ios/$XCODE_WORKSPACE \
+            --scheme $XCODE_SCHEME \
+            --mode release
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      email:
+        recipients:
+          - mohteeflair@gmail.com

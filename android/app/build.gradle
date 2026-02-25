@@ -2,7 +2,14 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
-/**
+configurations.all {
+    resolutionStrategy {
+        force 'androidx.core:core:1.13.1'
+        force 'androidx.core:core-ktx:1.13.1'
+        force 'androidx.transition:transition:1.5.1'
+        force 'androidx.transition:transition-ktx:1.5.1'
+    }
+}/**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
  */
@@ -79,8 +86,8 @@ android {
         applicationId "com.mohteeflair"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 11
+        versionName "1.2.8"
     }
     signingConfigs {
         debug {
@@ -116,3 +123,4 @@ dependencies {
 }
 
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
+apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
