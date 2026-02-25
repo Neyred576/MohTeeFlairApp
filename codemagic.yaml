@@ -21,10 +21,14 @@ workflows:
           cd ios && pod install
       - name: Set up code signing
         script: |
+          echo "--- DEBUG INFO ---"
+          echo "Target Bundle ID: com.mohteeflair"
+          echo "Target Project ID: $APP_STORE_ID"
+          echo "------------------"
+          
           keychain initialize
           # Fetch certificates and profiles from App Store Connect
-          # Note: Ensure BUNDLE_ID and APP_STORE_ID are set in Codemagic Environment Variables
-          app-store-connect fetch-signing-files $BUNDLE_ID --project-id $APP_STORE_ID --type IOS_APP_STORE --install
+          app-store-connect fetch-signing-files "com.mohteeflair" --project-id "$APP_STORE_ID" --type IOS_APP_STORE --install
           keychain add-certificates
       - name: Build iOS app
         script: |
