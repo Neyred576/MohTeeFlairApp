@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
 import {
     View, Text, StyleSheet, ScrollView, TouchableOpacity,
     Dimensions, Animated, Easing, Image, Alert, Platform
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors } from '../constants/Theme';
 import { useAuth } from '../context/AuthContext';
@@ -47,13 +47,13 @@ const MenuItem = ({ title, icon, subtitle, index, onPress }: { title: string; ic
         <Animated.View style={[styles.menuItem, { opacity: fadeAnim, transform: [{ translateX: slideX }] }]}>
             <TouchableOpacity style={styles.menuItemInner} onPress={onPress} activeOpacity={0.75}>
                 <View style={styles.menuIconBox}>
-                    <Text style={styles.menuIcon}>{icon}</Text>
+                    <Icon name={icon} size={20} color={Colors.primary} />
                 </View>
                 <View style={styles.menuText}>
                     <Text style={styles.menuTitle}>{title}</Text>
                     <Text style={styles.menuSubtitle}>{subtitle}</Text>
                 </View>
-                <Text style={styles.menuArrow}>›</Text>
+                <Icon name="chevron-forward" size={16} color="rgba(201,133,106,0.3)" />
             </TouchableOpacity>
         </Animated.View>
     );
@@ -188,7 +188,7 @@ const ProfileScreen = ({ navigation }: any) => {
                                 </View>
                                 {/* Camera badge */}
                                 <View style={styles.cameraBadge}>
-                                    <Text style={styles.cameraIcon}>📷</Text>
+                                    <Icon name="camera" size={10} color={Colors.dark} />
                                 </View>
                             </View>
                         </TouchableOpacity>
@@ -235,7 +235,7 @@ const ProfileScreen = ({ navigation }: any) => {
                     <MenuItem
                         index={0}
                         title="My Orders"
-                        icon="📦"
+                        icon="cube-outline"
                         subtitle={ordersCount > 0 ? `${ordersCount} order${ordersCount > 1 ? 's' : ''}` : 'No orders yet'}
                         onPress={() => Alert.alert(
                             'My Orders',
@@ -248,7 +248,7 @@ const ProfileScreen = ({ navigation }: any) => {
                     <MenuItem
                         index={1}
                         title="Crown Rewards"
-                        icon="♛"
+                        icon="ribbon-outline"
                         subtitle={`${userPoints} points available`}
                         onPress={() => Alert.alert(
                             'Crown Rewards ♛',
@@ -259,7 +259,7 @@ const ProfileScreen = ({ navigation }: any) => {
                     <MenuItem
                         index={2}
                         title="Beauty Profile"
-                        icon="💆"
+                        icon="sparkles-outline"
                         subtitle="Skin type · preferences"
                         onPress={() => Alert.alert(
                             'Beauty Profile',
@@ -270,21 +270,21 @@ const ProfileScreen = ({ navigation }: any) => {
                     <MenuItem
                         index={3}
                         title="Wishlist"
-                        icon="♡"
+                        icon="heart-outline"
                         subtitle={wishlistCount > 0 ? `${wishlistCount} saved item${wishlistCount > 1 ? 's' : ''}` : 'Your saved items'}
                         onPress={() => navigation.navigate('Wishlist')}
                     />
                     <MenuItem
                         index={4}
                         title="Settings"
-                        icon="⚙️"
+                        icon="settings-outline"
                         subtitle="Privacy · notifications"
                         onPress={() => navigation.navigate('Settings')}
                     />
                     <MenuItem
                         index={5}
                         title="Contact Us"
-                        icon="📞"
+                        icon="call-outline"
                         subtitle="Support · Socials"
                         onPress={() => navigation.navigate('Contact')}
                     />

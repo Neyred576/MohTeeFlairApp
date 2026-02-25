@@ -1,14 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
 import {
     View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity,
-    Dimensions, Animated, Easing, Image
+    Dimensions, Animated, Easing, Image, FlatList
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../constants/Theme';
-import { ALL_PRODUCTS, Product } from '../constants/Products';
+import { ALL_PRODUCTS, Product, GALLERY_PRODUCTS } from '../constants/Products';
 import { SkeletonProduct } from '../components/SkeletonLoading';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import Icon from 'react-native-vector-icons/Ionicons';
+import Reanimated, {
+    useSharedValue,
+    useAnimatedStyle,
+    withSpring,
+    interpolate,
+    Extrapolate
+} from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
 
@@ -62,9 +69,13 @@ const ProductCard = ({ item, index, navigation }: { item: Product; index: number
                     </View>
                     {/* Wishlist */}
                     <TouchableOpacity style={styles.heartBtn} onPress={toggleWishlist} activeOpacity={0.8}>
-                        <Animated.Text style={[styles.heartIcon, { transform: [{ scale: heartScale }] }]}>
-                            {wishlist ? '❤️' : '♡'}
-                        </Animated.Text>
+                        <Animated.View style={{ transform: [{ scale: heartScale }] }}>
+                            <Icon
+                                name={wishlist ? 'heart' : 'heart-outline'}
+                                size={16}
+                                color={wishlist ? '#FF4B4B' : Colors.primary}
+                            />
+                        </Animated.View>
                     </TouchableOpacity>
                 </View>
 
@@ -76,16 +87,101 @@ const ProductCard = ({ item, index, navigation }: { item: Product; index: number
                     <Text style={styles.productSubtitle}>
                         {item.category}
                     </Text>
-                    <Text style={styles.stars}>★★★★★</Text>
+                    <View style={styles.starsRow}>
+                        {[1, 2, 3, 4, 5].map(s => (
+                            <Icon key={s} name="star" size={10} color={Colors.primary} />
+                        ))}
+                    </View>
                     <View style={styles.productPriceRow}>
                         <Text style={styles.productPrice}>{item.price}</Text>
                         <TouchableOpacity style={styles.plusBtn} onPress={handleAddToCart}>
-                            <Text style={styles.plusIcon}>+</Text>
+                            <Icon name="add" size={18} color="#FFFFFF" />
                         </TouchableOpacity>
                     </View>
                 </View>
             </TouchableOpacity>
         </Animated.View>
+    );
+};
+
+// ── Featured Carousel Card ───────────────────────────────────────────────────
+const FeaturedCard = ({ item, index, navigation }: any) => {
+    const scale = useRef(new Animated.Value(0.9)).current;
+
+    useEffect(() => {
+        Animated.spring(scale, { toValue: 1, friction: 8, tension: 40, delay: index * 100, useNativeDriver: true }).start();
+    }, []);
+
+    return (
+        <Animated.View style={[styles.featuredCard, { transform: [{ scale }] }]}>
+            <TouchableOpacity
+                onPress={() => navigation.navigate('ProductDetails', { product: item })}
+                activeOpacity={0.9}
+            >
+                <Image source={item.image} style={styles.featuredImage} resizeMode="cover" />
+                <View style={styles.featuredOverlay}>
+                    <Text style={styles.featuredTag}>FLASH</Text>
+                    <Text style={styles.featuredName}>{item.name}</Text>
+                    <Text style={styles.featuredPrice}>{item.price}</Text>
+                </View>
+            </TouchableOpacity>
+        </Animated.View>
+    );
+};
+
+// ── Reanimated Parallax Member Card ───────────────────────────────────────────
+const ReanimatedMemberCard = ({ user, userPoints, progressAnim, progressWidth }: any) => {
+    const rotateX = useSharedValue(0);
+    const rotateY = useSharedValue(0);
+
+    const animatedStyle = useAnimatedStyle(() => {
+        return {
+            transform: [
+                { perspective: 1000 },
+                { rotateX: `${rotateX.value}deg` },
+                { rotateY: `${rotateY.value}deg` },
+            ],
+        };
+    });
+
+    const handleTouch = (event: any) => {
+        const { locationX, locationY } = event.nativeEvent;
+        const centerX = (width - 44) / 2;
+        const centerY = 55; // height/2
+        rotateY.value = withSpring((locationX - centerX) / 10);
+        rotateX.value = withSpring((centerY - locationY) / 5);
+    };
+
+    const handleRelease = () => {
+        rotateX.value = withSpring(0);
+        rotateY.value = withSpring(0);
+    };
+
+    return (
+        <TouchableOpacity
+            activeOpacity={1}
+            onPressIn={handleTouch}
+            onPressOut={handleRelease}
+        >
+            <Reanimated.View style={[styles.memberCard, animatedStyle]}>
+                <View style={styles.memberGlowOrb} />
+                <View style={styles.memberLeft}>
+                    <Text style={styles.memberLabel}>{user?.isGuest ? 'GUEST EXPLORER' : 'ROYAL MEMBER'}</Text>
+                    <Text style={styles.memberStatus}>{user?.isGuest ? 'Join For Points' : 'Gold Status ♛'}</Text>
+                    <Text style={styles.memberPoints}>{userPoints} Crown Points</Text>
+                </View>
+                <Icon name="ribbon" size={42} color={Colors.primary} style={styles.memberIconBig} />
+                <View style={styles.memberProgressArea}>
+                    <View style={styles.memberProgressLabels}>
+                        <Text style={styles.memberProgressLabelLeft}>{user?.isGuest ? 'Guest' : 'Gold'}</Text>
+                        <Text style={styles.memberProgressLabelRight}>{Math.max(0, 3000 - userPoints)} pts to Platinum</Text>
+                    </View>
+                    <View style={styles.memberProgressTrack}>
+                        <Animated.View style={[styles.memberProgressFill, { width: progressWidth }]} />
+                    </View>
+                </View>
+            </Reanimated.View>
+        </TouchableOpacity>
     );
 };
 
@@ -197,7 +293,7 @@ const HomeScreen = ({ navigation }: any) => {
                 {/* Search Bar */}
                 <View style={styles.searchSection}>
                     <View style={styles.searchBar}>
-                        <Text style={styles.searchIcon}>🔍</Text>
+                        <Icon name="search" size={18} color={Colors.muted} style={{ marginRight: 8 }} />
                         <TextInput
                             style={styles.searchInput}
                             placeholder="Search luxury beauty..."
@@ -208,12 +304,12 @@ const HomeScreen = ({ navigation }: any) => {
                         />
                         {isSearching && (
                             <TouchableOpacity onPress={() => setSearchQuery('')}>
-                                <Text style={styles.clearIcon}>✕</Text>
+                                <Icon name="close-circle" size={18} color={Colors.muted} />
                             </TouchableOpacity>
                         )}
                         {!isSearching && (
                             <TouchableOpacity>
-                                <Text style={styles.filterIcon}>⚙</Text>
+                                <Icon name="options-outline" size={18} color={Colors.muted} />
                             </TouchableOpacity>
                         )}
                     </View>
@@ -221,28 +317,28 @@ const HomeScreen = ({ navigation }: any) => {
 
                 {/* Royal Membership Card — hide while searching */}
                 {!isSearching && (
-                    <View style={styles.memberCard}>
-                        {/* Background glow */}
-                        <View style={styles.memberGlowOrb} />
+                    <ReanimatedMemberCard user={user} userPoints={userPoints} progressAnim={progressAnim} progressWidth={progressWidth} />
+                )}
 
-                        <View style={styles.memberLeft}>
-                            <Text style={styles.memberLabel}>{user?.isGuest ? 'GUEST EXPLORER' : 'ROYAL MEMBER'}</Text>
-                            <Text style={styles.memberStatus}>{user?.isGuest ? 'Join For Points' : 'Gold Status ♛'}</Text>
-                            <Text style={styles.memberPoints}>{userPoints} Crown Points</Text>
+                {/* Featured Arrivals Horizontal Carousel — hide while searching */}
+                {!isSearching && (
+                    <View style={styles.featuredSection}>
+                        <View style={styles.sectionHeader}>
+                            <Text style={styles.sectionTitle}>Featured Arrivals</Text>
+                            <TouchableOpacity onPress={() => navigation.navigate('Shop')}>
+                                <Text style={styles.seeAll}>Explore Collection →</Text>
+                            </TouchableOpacity>
                         </View>
-                        {/* Crown watermark */}
-                        <Text style={styles.memberCrownBig}>♛</Text>
-
-                        {/* Progress bar */}
-                        <View style={styles.memberProgressArea}>
-                            <View style={styles.memberProgressLabels}>
-                                <Text style={styles.memberProgressLabelLeft}>{user?.isGuest ? 'Guest' : 'Gold'}</Text>
-                                <Text style={styles.memberProgressLabelRight}>{Math.max(0, 3000 - userPoints)} pts to Platinum</Text>
-                            </View>
-                            <View style={styles.memberProgressTrack}>
-                                <Animated.View style={[styles.memberProgressFill, { width: progressWidth }]} />
-                            </View>
-                        </View>
+                        <FlatList
+                            data={GALLERY_PRODUCTS.slice(4, 9)}
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            keyExtractor={(item) => item.id}
+                            contentContainerStyle={{ paddingLeft: 22, paddingRight: 10 }}
+                            renderItem={({ item, index }) => (
+                                <FeaturedCard item={item} index={index} navigation={navigation} />
+                            )}
+                        />
                     </View>
                 )}
 
@@ -392,43 +488,39 @@ const styles = StyleSheet.create({
     },
     memberStatus: { fontSize: 16, color: Colors.primary, fontFamily: 'serif', fontWeight: '600' },
     memberPoints: { fontSize: 9, color: Colors.muted, fontWeight: '500' },
-    memberCrownBig: {
+    memberIconBig: {
         position: 'absolute',
         right: 14,
         top: 10,
-        fontSize: 42,
-        opacity: 0.1,
-        color: Colors.primary,
+        opacity: 0.15,
     },
     memberProgressArea: { gap: 4 },
-    memberProgressLabels: { flexDirection: 'row', justifyContent: 'space-between' },
-    memberProgressLabelLeft: { fontSize: 8, color: Colors.muted, letterSpacing: 1 },
-    memberProgressLabelRight: { fontSize: 8, color: Colors.muted, letterSpacing: 0.5 },
-    memberProgressTrack: {
-        height: 4,
-        backgroundColor: 'rgba(201,133,106,0.1)',
-        borderRadius: 2,
-        overflow: 'hidden',
-    },
-    memberProgressFill: {
-        height: '100%',
-        borderRadius: 2,
-        backgroundColor: Colors.primary,
-    },
+    // ... rest of member styles ...
 
-    // Categories
-    categoryContent: { paddingHorizontal: 22, paddingBottom: 16, gap: 8 },
-    categoryPill: {
-        paddingHorizontal: 18,
-        paddingVertical: 9,
+    // Featured Section
+    featuredSection: { marginBottom: 25 },
+    featuredCard: {
+        width: 200,
+        height: 140,
+        marginRight: 15,
         borderRadius: 20,
-        backgroundColor: '#FFFFFF',
+        overflow: 'hidden',
+        backgroundColor: Colors.dark,
         borderWidth: 1,
-        borderColor: '#E8DDD5',
+        borderColor: 'rgba(255,255,255,0.05)',
     },
-    activePill: { backgroundColor: Colors.dark, borderColor: Colors.dark },
-    categoryText: { fontSize: 12, color: Colors.muted, fontWeight: '600' },
-    activeCategoryText: { color: '#FFFFFF', fontWeight: '700' },
+    featuredImage: { width: '100%', height: '100%', opacity: 0.7 },
+    featuredOverlay: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: 12,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+    },
+    featuredTag: { fontSize: 7, color: Colors.primary, fontWeight: '700', letterSpacing: 1.5, marginBottom: 2 },
+    featuredName: { fontSize: 13, color: Colors.text, fontWeight: '600' },
+    featuredPrice: { fontSize: 11, color: Colors.muted, marginTop: 1 },
 
     // Section Header
     sectionHeader: {
@@ -440,16 +532,6 @@ const styles = StyleSheet.create({
     },
     sectionTitle: { fontSize: 20, color: Colors.text, fontFamily: 'serif', fontWeight: '500' },
     seeAll: { fontSize: 9, color: Colors.primary, letterSpacing: 1, fontWeight: '600' },
-
-    // Empty search
-    emptySearch: {
-        alignItems: 'center',
-        paddingVertical: 60,
-        paddingHorizontal: 20,
-    },
-    emptySearchEmoji: { fontSize: 48, marginBottom: 16 },
-    emptySearchText: { fontSize: 18, color: Colors.text, fontWeight: '600', marginBottom: 6 },
-    emptySearchSub: { fontSize: 13, color: Colors.muted },
 
     // Products
     productsGrid: { paddingHorizontal: 14 },
@@ -494,22 +576,20 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.1)',
     },
-    heartIcon: { fontSize: 14, color: Colors.primary },
     productInfo: { padding: 10, gap: 3 },
     productName: { fontSize: 13, color: Colors.text, fontWeight: '700' },
     productSubtitle: { fontSize: 11, color: Colors.muted },
-    stars: { fontSize: 10, color: Colors.primary, letterSpacing: 1 },
+    starsRow: { flexDirection: 'row', gap: 2, marginBottom: 2 },
     productPriceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
     productPrice: { fontSize: 22, color: Colors.primary, fontFamily: 'serif', fontWeight: '500' },
     plusBtn: {
         width: 28,
         height: 28,
         borderRadius: 14,
-        backgroundColor: Colors.dark,
+        backgroundColor: Colors.primary,
         justifyContent: 'center',
         alignItems: 'center',
     },
-    plusIcon: { color: '#FFFFFF', fontSize: 18, lineHeight: 20, fontWeight: '300' },
 });
 
 export default HomeScreen;

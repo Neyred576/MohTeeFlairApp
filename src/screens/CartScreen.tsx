@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Animated, Dimensions, Easing } from 'react-native';
 import { useCart } from '../context/CartContext';
 import { Colors } from '../constants/Theme';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const { width } = Dimensions.get('window');
 
@@ -69,15 +70,15 @@ const CartScreen = ({ navigation }: any) => {
             </View>
             <View style={styles.itemActions}>
                 <TouchableOpacity style={styles.deleteButton} onPress={() => removeFromCart(item.id)}>
-                    <Text style={styles.deleteIcon}>✕</Text>
+                    <Icon name="trash-outline" size={18} color="#FF4646" />
                 </TouchableOpacity>
                 <View style={styles.quantityContainer}>
                     <TouchableOpacity onPress={() => updateQuantity(item.id, -1)} style={styles.qtyBtn}>
-                        <Text style={styles.qtyText}>-</Text>
+                        <Icon name="remove" size={16} color={Colors.primary} />
                     </TouchableOpacity>
                     <Text style={styles.qtyValue}>{item.quantity}</Text>
                     <TouchableOpacity onPress={() => updateQuantity(item.id, 1)} style={styles.qtyBtn}>
-                        <Text style={styles.qtyText}>+</Text>
+                        <Icon name="add" size={16} color={Colors.primary} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -89,7 +90,7 @@ const CartScreen = ({ navigation }: any) => {
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                    <Text style={styles.backIcon}>←</Text>
+                    <Icon name="chevron-back" size={20} color={Colors.text} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>YOUR SHOPPING BAG</Text>
                 <Image source={require('../assets/logo/new_logo.png')} style={{ width: 60, height: 60 }} resizeMode="contain" />
@@ -211,10 +212,14 @@ const styles = StyleSheet.create({
 
     // Summary
     summaryContainer: {
-        backgroundColor: 'rgba(26,26,26,0.8)',
-        borderRadius: 25, padding: 25,
-        borderWidth: 1, borderColor: 'rgba(184,115,90,0.2)',
-        marginBottom: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.03)',
+        borderRadius: 28, padding: 25,
+        borderWidth: 1, borderColor: 'rgba(201, 133, 106, 0.12)',
+        marginBottom: 25,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.2,
+        shadowRadius: 15,
     },
     summaryTitle: { fontSize: 14, fontWeight: 'bold', color: Colors.text, marginBottom: 20, letterSpacing: 2 },
     summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 15 },

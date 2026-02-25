@@ -5,6 +5,12 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../constants/Theme';
+import Icon from 'react-native-vector-icons/Ionicons';
+import Reanimated, {
+    FadeInDown,
+    FadeInRight,
+    Layout
+} from 'react-native-reanimated';
 
 const { width, height } = Dimensions.get('window');
 
@@ -85,16 +91,31 @@ const BeautyTipsScreen = ({ navigation }: any) => {
 
     const renderTipCard = ({ item, index }: any) => {
         return (
-            <Animated.View style={[styles.tipCard, { transform: [{ scale: listScale }] }]}>
+            <Reanimated.View
+                entering={FadeInDown.delay(index * 200).springify()}
+                layout={Layout.springify()}
+                style={styles.tipCard}
+            >
                 <View style={styles.tipIconBox}>
-                    <Text style={styles.tipIcon}>{item.icon}</Text>
+                    <Icon name={getIconName(item.icon)} size={24} color={Colors.primary} />
                 </View>
                 <View style={styles.tipContent}>
                     <Text style={styles.tipTitle}>{item.title}</Text>
-                    <Text style={styles.tipDesc} numberOfLines={3}>{item.desc}</Text>
+                    <Text style={styles.tipDesc}>{item.desc}</Text>
                 </View>
-            </Animated.View>
+            </Reanimated.View>
         );
+    };
+
+    const getIconName = (emoji: string) => {
+        switch (emoji) {
+            case '✨': return 'sparkles';
+            case '💧': return 'water';
+            case '🧴': return 'flask-outline';
+            case '🎨': return 'color-palette';
+            case '🧊': return 'snow';
+            default: return 'bulb-outline';
+        }
     };
 
     return (
@@ -115,12 +136,15 @@ const BeautyTipsScreen = ({ navigation }: any) => {
             </View>
 
             <View style={{ flex: 1, width: '100%' }}>
-                <Animated.View style={{ opacity: fadeIn, paddingHorizontal: 20, paddingBottom: 10, paddingTop: 10 }}>
+                <Reanimated.View
+                    entering={FadeInRight.delay(100).duration(800)}
+                    style={{ paddingHorizontal: 20, paddingBottom: 10, paddingTop: 10 }}
+                >
                     <Text style={styles.title}>Beauty Tips &{'\n'}Secrets</Text>
                     <Text style={styles.subtitle}>
                         Expert skincare routines, makeup tutorials, and exclusive beauty secrets — crafted just for you.
                     </Text>
-                </Animated.View>
+                </Reanimated.View>
 
                 <FlatList
                     data={TIPS_DATA}
@@ -216,28 +240,32 @@ const styles = StyleSheet.create({
     // Tip Card Styles
     tipCard: {
         flexDirection: 'row',
-        backgroundColor: 'rgba(20,12,8,0.7)',
-        borderRadius: 20,
-        padding: 16,
+        backgroundColor: 'rgba(255, 255, 255, 0.04)',
+        borderRadius: 24,
+        padding: 20,
         borderWidth: 1,
-        borderColor: 'rgba(201,133,106,0.3)',
+        borderColor: 'rgba(201, 133, 106, 0.15)',
         alignItems: 'center',
+        shadowColor: Colors.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
     },
     tipIconBox: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: 'rgba(201,133,106,0.1)',
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: 'rgba(201, 133, 106, 0.08)',
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 16,
+        marginRight: 18,
         borderWidth: 1,
-        borderColor: 'rgba(201,133,106,0.2)',
+        borderColor: 'rgba(201, 133, 106, 0.2)',
     },
     tipIcon: { fontSize: 24 },
     tipContent: { flex: 1 },
-    tipTitle: { fontSize: 16, color: Colors.primaryLight, fontWeight: '600', marginBottom: 4, fontFamily: 'serif' },
-    tipDesc: { fontSize: 13, color: Colors.textSecondary, lineHeight: 18 },
+    tipTitle: { fontSize: 17, color: Colors.primary, fontWeight: '700', marginBottom: 6, fontFamily: 'serif' },
+    tipDesc: { fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 20 },
 
     // Bottom dots
     bottomDots: { flexDirection: 'row', gap: 8, marginBottom: 40, position: 'absolute', bottom: 10 },
