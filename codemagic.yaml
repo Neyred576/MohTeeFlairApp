@@ -1,6 +1,6 @@
 workflows:
-  ios-build: # Renamed to 'build' instead of 'release'
-    name: iOS Build (Simulator/Debug)
+  ios-build:
+    name: iOS Build (Verification)
     max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
@@ -17,17 +17,20 @@ workflows:
       - name: Install CocoaPods
         script: |
           cd ios && pod install
-      - name: Build iOS app (Debug)
+      - name: Verify iOS Build
         script: |
-          # Building without signing for verification. 
-          # Note: This will NOT produce an installable .ipa for real iPhones.
-          xcode-project build-ipa \
-            --workspace ios/$XCODE_WORKSPACE \
-            --scheme $XCODE_SCHEME \
-            --mode debug \
-            --sdk iphonesimulator
+          # Building for simulator to verify code without needing Apple Developer signing
+          xcodebuild \
+            -workspace ios/$XCODE_WORKSPACE \
+            -scheme $XCODE_SCHEME \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            build
     artifacts:
-      - build/ios/ipa/*.ipa
+      - ios/build/Build/Products/Debug-iphonesimulator/*.app
 
   android-release:
     name: Android Release
