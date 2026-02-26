@@ -1,11 +1,9 @@
 workflows:
-  ios-release:
-    name: iOS Release
+  ios-build: # Renamed to 'build' instead of 'release'
+    name: iOS Build (Simulator/Debug)
     max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
-      groups:
-        - apple_auth # Variable group for App Store Connect integration
       vars:
         XCODE_WORKSPACE: "MohTeeFlair.xcworkspace"
         XCODE_SCHEME: "MohTeeFlair"
@@ -19,22 +17,29 @@ workflows:
       - name: Install CocoaPods
         script: |
           cd ios && pod install
-      - name: Set up code signing
+      - name: Build iOS app (Debug)
         script: |
-          keychain initialize
-          # Fetch certificates and profiles from App Store Connect
-          # Note: The bundle ID is hardcoded here to prevent variable expansion errors.
-          app-store-connect fetch-signing-files "com.mohteeflair" --type IOS_APP_STORE --create
-          keychain add-certificates
-      - name: Build iOS app
-        script: |
+          # Building without signing for verification. 
+          # Note: This will NOT produce an installable .ipa for real iPhones.
           xcode-project build-ipa \
             --workspace ios/$XCODE_WORKSPACE \
             --scheme $XCODE_SCHEME \
-            --mode release
+            --mode debug \
+            --sdk iphonesimulator
     artifacts:
       - build/ios/ipa/*.ipa
-    publishing:
-      email:
-        recipients:
-          - mohteeflair@gmail.com
+
+  android-release:
+    name: Android Release
+    instance_type: mac_mini_m2
+    environment:
+      node: latest
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install
+      - name: Build Android
+        script: |
+          cd android && ./gradlew assembleRelease
+    artifacts:
+      - android/app/build/outputs/apk/release/*.apk

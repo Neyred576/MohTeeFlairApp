@@ -20,7 +20,6 @@ import Reanimated, {
 const { width } = Dimensions.get('window');
 
 // ── Product Card ─────────────────────────────────────────────────────────────
-import { GALLERY_PRODUCTS } from '../constants/Products';
 
 const ProductCard = ({ item, index, navigation }: { item: Product; index: number; navigation: any }) => {
     const fadeAnim = useRef(new Animated.Value(0)).current;
